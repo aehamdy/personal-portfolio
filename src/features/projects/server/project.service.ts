@@ -1,4 +1,4 @@
-import { connectToDatabase } from "@/app/lib/db/connection";
+import { connectToDatabase } from "@/lib/db/connection";
 import ProjectModel from "./project.model";
 import {
   CreateProjectInput,
@@ -7,7 +7,6 @@ import {
 } from "../types/project.types";
 
 // PUBLIC QUERIES
-
 export async function getPublishedProjects() {
   await connectToDatabase();
 
