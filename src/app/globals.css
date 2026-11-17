@@ -1,18 +1,185 @@
 @import "tailwindcss";
 
-:root {
+/* Default theme */
+:root,
+:root[data-theme="white"] {
   color-scheme: light;
 
   --background: #ffffff;
+  --surface: #f7f7f7;
+  --surface-elevated: #ffffff;
+  /* --accent: #6366f1; */
+  /* --accent: #e61e32; */
+  --accent: #b20000;
+  --accent-hover: color-mix(in srgb, var(--accent) 85%, transparent);
+
   --foreground: #171717;
+  --foreground-muted: #737373;
+
+  --border: #e5e5e5;
+
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+
+  --focus-ring: #737373;
+
+  --primary-hover: #333333;
+  --surface-hover: #f0f0f0;
+  --selection: #d4d4d4;
+}
+
+:root[data-theme="off-white"] {
+  color-scheme: light;
+
+  /* --background: #f5f2eb; */
+  --background: #fdfbef;
+  --surface: #ebe7de;
+  --surface-elevated: #fbf9f4;
+  /* --accent: #9a6748; */
+  /* --accent: #235451; */
+  /* --accent: #b20000; */
+  --accent: #ec5d3d;
+  --accent-hover: color-mix(in srgb, var(--accent) 85%, transparent);
+
+  --foreground: #292720;
+  --foreground-muted: #716c62;
+
+  --border: #ded8cc;
+
+  --primary: #292720;
+  --primary-foreground: #fbf9f4;
+
+  --focus-ring: #8a8174;
+
+  --primary-hover: #454137;
+  --surface-hover: #e5dfd3;
+  --selection: #d9d0bf;
+}
+
+:root[data-theme="black"] {
+  color-scheme: dark;
+
+  --background: #0b0b0d;
+  --surface: #151518;
+  --surface-elevated: #1d1d21;
+  /* --accent: #a78bfa; */
+  /* --accent: #fed141; */
+  /* --accent: #92ff5f; */
+  --accent: #a8ff00;
+  --accent-hover: color-mix(in srgb, var(--accent) 85%, transparent);
+
+  --foreground: #f5f5f5;
+  --foreground-muted: #a1a1aa;
+
+  --border: #303034;
+
+  --primary: #f5f5f5;
+  --primary-foreground: #171717;
+
+  --focus-ring: #a1a1aa;
+
+  --primary-hover: #dedede;
+  --surface-hover: #252529;
+  --selection: #45454b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-muted: var(--foreground-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+
+  --color-primary-hover: var(--primary-hover);
+  --color-surface-hover: var(--surface-hover);
+  --color-selection: var(--selection);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Font families */
+  --font-display: var(--font-barlow-condensed);
+  --font-heading: var(--font-barlow-condensed);
+  --font-body: var(--font-plus-jakarta-sans);
+  --font-ui: var(--font-plus-jakarta-sans);
+  --font-sans: var(--font-plus-jakarta-sans);
+
+  /* Typography scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  /* Display sizes */
+  --text-display-lg: clamp(3.5rem, 8vw, 6rem);
+  --text-display-md: clamp(2.75rem, 6vw, 4.5rem);
+
+  /* Spacing scale */
+  --spacing-1: 0.25rem; /* 4px */
+  --spacing-2: 0.5rem; /* 8px */
+  --spacing-3: 0.75rem; /* 12px */
+  --spacing-4: 1rem; /* 16px */
+  --spacing-5: 1.25rem; /* 20px */
+  --spacing-6: 1.5rem; /* 24px */
+  --spacing-8: 2rem; /* 32px */
+  --spacing-10: 2.5rem; /* 40px */
+  --spacing-12: 3rem; /* 48px */
+  --spacing-16: 4rem; /* 64px */
+  --spacing-20: 5rem; /* 80px */
+  --spacing-24: 6rem; /* 96px */
+  --spacing-32: 8rem; /* 128px */
+
+  /* Layout dimensions */
+  --container-content: 48rem;
+  --container-wide: 64rem;
+  --container-main: 80rem;
+  --container-full: 90rem;
+
+  /* Header */
+  --height-header: 4.5rem;
+
+  /* Border widths */
+  --border-width-default: 1px;
+  --border-width-strong: 2px;
+
+  /* Border radius */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 5%);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 8%), 0 1px 2px rgb(0 0 0 / 4%);
+  --shadow-md: 0 4px 8px rgb(0 0 0 / 8%);
+  --shadow-lg: 0 10px 24px rgb(0 0 0 / 10%);
+  --shadow-xl: 0 20px 40px rgb(0 0 0 / 12%);
+}
+
+:where(
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 
 html {
@@ -23,5 +190,19 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-plus-jakarta-sans), Arial, Helvetica, sans-serif;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
