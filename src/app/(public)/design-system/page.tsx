@@ -9,12 +9,6 @@ export const metadata: Metadata = {
   description: "Design system preview and component playground.",
 };
 
-const themes = [
-  { name: "White", value: "white" },
-  { name: "Off-white", value: "off-white" },
-  { name: "Black", value: "black" },
-] as const;
-
 const colors = [
   { name: "Background", variable: "--background" },
   { name: "Surface", variable: "--surface" },
