@@ -45,6 +45,23 @@ const profileModelSchema = new Schema(
     _id: { type: String, default: "main" },
     firstName: { type: String, required: true, trim: true, maxLength: 100 },
     lastName: { type: String, required: true, trim: true, maxLength: 100 },
+    role: { type: String, required: true, trim: true, maxLength: 100 },
+    about: {
+      heading: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 200,
+      },
+      paragraphs: {
+        type: [String],
+        required: true,
+        validate: {
+          validator: (paragraphs: string[]) => paragraphs.length > 0,
+          message: "About section must contain at least one paragraph.",
+        },
+      },
+    },
     headline: { type: String, required: true, trim: true, maxLength: 120 },
     tagline: { type: String, required: true, trim: true, maxLength: 200 },
     introduction: { type: String, required: true, trim: true, maxLength: 500 },

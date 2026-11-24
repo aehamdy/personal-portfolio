@@ -1,5 +1,10 @@
 import z from "zod";
 
+export const aboutSchema = z.object({
+  heading: z.string().trim().min(1).max(200),
+  paragraphs: z.array(z.string().trim().min(1)).min(1),
+});
+
 export const profileImageSchema = z.object({
   url: z.url(),
   publicId: z.string().min(1),
@@ -23,6 +28,10 @@ export const profileSchema = z.object({
   firstName: z.string().trim().min(1).max(100),
 
   lastName: z.string().trim().min(1).max(100),
+
+  role: z.string().trim().min(1).max(100),
+
+  about: aboutSchema,
 
   headline: z.string().trim().min(1).max(120),
 
