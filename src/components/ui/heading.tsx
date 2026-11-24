@@ -64,7 +64,7 @@ export function Heading({
   ...props
 }: HeadingProps) {
   const classes = [
-    "font-heading leading-tight tracking-tight",
+    "font-display leading-none tracking-[0.01em]",
     sizeStyles[size ?? defaultSizes[Tag]],
     weightStyles[weight],
     className,
