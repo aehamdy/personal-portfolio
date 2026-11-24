@@ -1,9 +1,10 @@
 import "server-only";
 
-import mongoose, { Schema } from "mongoose";
+import { model, models, Schema } from "mongoose";
 
-// Shared embedded schemas
+import type { Project } from "../types/project.types";
 
+// Reusable schemas
 const projectImageSchema = new Schema(
   {
     url: {
@@ -17,159 +18,143 @@ const projectImageSchema = new Schema(
     alt: {
       type: String,
       required: true,
+      maxlength: 300,
     },
-    width: Number,
-    height: Number,
-  },
-  { _id: false },
-);
-
-const projectLinkSchema = new Schema(
-  {
-    label: {
-      type: String,
-      required: true,
+    width: {
+      type: Number,
+      min: 1,
     },
-    url: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      enum: ["live-demo", "repo", "design", "other"],
-      required: true,
+    height: {
+      type: Number,
+      min: 1,
     },
   },
   { _id: false },
 );
 
-// Project content block schemas
-
-// Rich-text content is validated by our Zod schema before reaching MongoDB.
-// Mixed allows us to preserve the structured JSON nodes.
-const richTextBlockSchema = new Schema(
+const projectLinksSchema = new Schema(
   {
-    content: {
-      type: [Schema.Types.Mixed],
-      default: [],
-    },
-  },
-  { _id: false },
-);
-
-const imageBlockSchema = new Schema(
-  {
-    image: {
-      type: projectImageSchema,
-      required: true,
-    },
-    caption: String,
-  },
-  { _id: false },
-);
-
-const galleryBlockSchema = new Schema(
-  {
-    images: {
-      type: [projectImageSchema],
-      required: true,
-    },
-    layout: {
+    liveDemo: {
       type: String,
-      enum: ["grid", "masonry"],
-      default: "grid",
+      default: null,
+    },
+    sourceCode: {
+      type: String,
+      default: null,
+    },
+    design: {
+      type: String,
+      default: null,
+    },
+    other: {
+      type: String,
+      default: null,
     },
   },
   { _id: false },
 );
 
-const featureItemSchema = new Schema(
+const projectColorThemeSchema = new Schema(
   {
-    title: {
+    accent: {
       type: String,
       required: true,
     },
-    description: {
+    background: {
       type: String,
       required: true,
     },
-    icon: String,
-  },
-  { _id: false },
-);
-
-const featuresBlockSchema = new Schema(
-  {
-    title: String,
-    items: {
-      type: [featureItemSchema],
+    primaryForeground: {
+      type: String,
+      required: true,
+    },
+    secondaryForeground: {
+      type: String,
+      required: true,
+    },
+    contrastForeground: {
+      type: String,
       required: true,
     },
   },
   { _id: false },
 );
 
-const twoColumnBlockSchema = new Schema(
-  {
-    left: {
-      type: [Schema.Types.Mixed],
-      default: [],
-    },
-    right: {
-      type: [Schema.Types.Mixed],
-      default: [],
-    },
-  },
-  { _id: false },
-);
-
-const codeBlockSchema = new Schema(
-  {
-    language: {
-      type: String,
-      required: true,
-    },
-    code: {
-      type: String,
-      required: true,
-    },
-    filename: String,
-  },
-  { _id: false },
-);
-
-// The base schema defines the discriminator key shared by all block types.
-const projectBlockBaseSchema = new Schema(
-  {
-    type: {
-      type: String,
-      required: true,
-      enum: ["richText", "image", "gallery", "features", "twoColumn", "code"],
-    },
-  },
-  {
-    _id: false,
-    discriminatorKey: "type",
-  },
-);
-
-// Main project schema
-
-const projectModelSchema = new Schema(
+const projectFeatureSchema = new Schema(
   {
     title: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 120,
+      maxlength: 150,
+    },
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 1000,
+    },
+  },
+  { _id: false },
+);
+
+const projectChallengeSchema = new Schema(
+  {
+    problem: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 2000,
+    },
+    solution: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 2000,
+    },
+  },
+  { _id: false },
+);
+
+const projectCollaboratorSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    url: {
+      type: String,
+      default: null,
+    },
+  },
+  { _id: false },
+);
+
+// Main project schema
+const projectSchema = new Schema<Project>(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 150,
     },
 
     slug: {
       type: String,
       required: true,
-      trim: true,
-      lowercase: true,
       unique: true,
+      lowercase: true,
+      trim: true,
+      maxlength: 180,
     },
 
     summary: {
@@ -181,8 +166,9 @@ const projectModelSchema = new Schema(
 
     overview: {
       type: String,
-      default: "",
+      required: true,
       trim: true,
+      maxlength: 3000,
     },
 
     thumbnail: {
@@ -195,24 +181,69 @@ const projectModelSchema = new Schema(
       default: [],
     },
 
+    tags: {
+      type: [String],
+      default: [],
+    },
+
     technologies: {
       type: [String],
       default: [],
     },
 
-    links: {
-      type: [projectLinkSchema],
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+
+    duration: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+
+    features: {
+      type: [projectFeatureSchema],
       default: [],
     },
 
+    keyHighlights: {
+      type: [String],
+      default: [],
+    },
+
+    challenges: {
+      type: [projectChallengeSchema],
+      default: [],
+    },
+
+    collaborators: {
+      type: [projectCollaboratorSchema],
+      default: [],
+    },
+
+    colorTheme: {
+      type: projectColorThemeSchema,
+      required: true,
+    },
+
+    links: {
+      type: projectLinksSchema,
+      required: true,
+    },
+
     blocks: {
-      type: [projectBlockBaseSchema],
+      type: Schema.Types.Mixed,
       default: [],
     },
 
     isFeatured: {
       type: Boolean,
       default: false,
+      index: true,
     },
 
     status: {
@@ -225,6 +256,7 @@ const projectModelSchema = new Schema(
     order: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     publishedAt: {
@@ -239,37 +271,17 @@ const projectModelSchema = new Schema(
   },
 );
 
-// Register the schemas for each supported block type.
-const blocksPath = projectModelSchema.path(
-  "blocks",
-) as mongoose.Schema.Types.DocumentArray;
-
-blocksPath.discriminator("richText", richTextBlockSchema);
-blocksPath.discriminator("image", imageBlockSchema);
-blocksPath.discriminator("gallery", galleryBlockSchema);
-blocksPath.discriminator("features", featuresBlockSchema);
-blocksPath.discriminator("twoColumn", twoColumnBlockSchema);
-blocksPath.discriminator("code", codeBlockSchema);
-
+// -----------------------------------------------------------------------------
 // Indexes
+// -----------------------------------------------------------------------------
 
-// Efficiently retrieve published projects in their display order.
-projectModelSchema.index({
-  status: 1,
-  order: 1,
-  publishedAt: -1,
-});
+projectSchema.index({ status: 1, order: 1, publishedAt: -1 });
+projectSchema.index({ status: 1, isFeatured: 1, order: 1 });
 
-// Efficiently retrieve featured projects.
-projectModelSchema.index({
-  isFeatured: 1,
-  status: 1,
-  order: 1,
-});
-
+// -----------------------------------------------------------------------------
 // Model
+// -----------------------------------------------------------------------------
 
-const ProjectModel =
-  mongoose.models.Project || mongoose.model("Project", projectModelSchema);
+const ProjectModel = models.Project || model<Project>("Project", projectSchema);
 
 export default ProjectModel;

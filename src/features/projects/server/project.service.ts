@@ -7,6 +7,20 @@ import {
 } from "../types/project.types";
 
 // PUBLIC QUERIES
+export async function getFeaturedProjects(limit = 3) {
+  await connectToDatabase();
+
+  return ProjectModel.find({
+    status: "published",
+    isFeatured: true,
+  })
+    .select("_id title slug summary thumbnail technologies colorTheme")
+    .sort({ order: 1, publishedAt: -1 })
+    .limit(limit)
+    .lean()
+    .exec();
+}
+
 export async function getPublishedProjects() {
   await connectToDatabase();
 
