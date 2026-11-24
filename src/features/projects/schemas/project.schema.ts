@@ -1,113 +1,120 @@
 import { z } from "zod";
 
+// -----------------------------------------------------------------------------
+// Reusable schemas
+// -----------------------------------------------------------------------------
+
 export const projectImageSchema = z.object({
   url: z.url(),
-  publicId: z.string().min(1),
-  alt: z.string().min(1),
-  width: z.number().positive().optional(),
-  height: z.number().positive().optional(),
+  publicId: z.string().trim().min(1),
+  alt: z.string().trim().min(1).max(300),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
 });
 
-export const projectLinkSchema = z.object({
-  label: z.string().min(1),
-  url: z.url(),
-  type: z.enum(["live-demo", "repo", "design", "other"]),
+export const projectLinksSchema = z.object({
+  liveDemo: z.url().nullable(),
+  sourceCode: z.url().nullable(),
+  design: z.url().nullable(),
+  other: z.url().nullable(),
 });
 
+export const projectColorThemeSchema = z.object({
+  accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  background: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  primaryForeground: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  secondaryForeground: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  contrastForeground: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+});
+
+export const projectFeatureSchema = z.object({
+  title: z.string().trim().min(1).max(150),
+  description: z.string().trim().min(1).max(1000),
+});
+
+export const projectChallengeSchema = z.object({
+  problem: z.string().trim().min(1).max(2000),
+  solution: z.string().trim().min(1).max(2000),
+});
+
+export const projectCollaboratorSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  role: z.string().trim().min(1).max(100),
+  url: z.url().nullable().default(null),
+});
+
+// -----------------------------------------------------------------------------
 // Rich text schemas
-const textNodeSchema = z.object({
-  type: z.literal("text"),
-  text: z.string(),
-  marks: z.array(z.enum(["bold", "italic", "code"])).optional(),
-});
+// -----------------------------------------------------------------------------
 
-const linkNodeSchema = z.object({
-  type: z.literal("link"),
-  href: z.url(),
-  text: z.string(),
-});
-
-const inlineNodeSchema = z.discriminatedUnion("type", [
-  textNodeSchema,
-  linkNodeSchema,
+export const richTextChildSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("text"),
+    text: z.string(),
+  }),
+  z.object({
+    type: z.literal("link"),
+    text: z.string(),
+    url: z.url(),
+  }),
 ]);
 
-const paragraphNodeSchema = z.object({
-  type: z.literal("paragraph"),
-  children: z.array(inlineNodeSchema),
-});
+export const richTextNodeSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("paragraph"),
+    children: z.array(richTextChildSchema),
+  }),
+  z.object({
+    type: z.literal("heading"),
+    level: z.union([z.literal(2), z.literal(3)]),
+    children: z.array(richTextChildSchema),
+  }),
+  z.object({
+    type: z.literal("bulletList"),
+    items: z.array(z.array(richTextChildSchema)),
+  }),
+  z.object({
+    type: z.literal("orderedList"),
+    items: z.array(z.array(richTextChildSchema)),
+  }),
+]);
 
-const headingNodeSchema = z.object({
-  type: z.literal("heading"),
-  level: z.union([z.literal(2), z.literal(3)]),
-  children: z.array(inlineNodeSchema),
-});
+// -----------------------------------------------------------------------------
+// Content block schemas
+// -----------------------------------------------------------------------------
 
-const listNodeSchema = z.object({
-  type: z.enum(["bulletList", "orderedList"]),
-  items: z.array(z.array(inlineNodeSchema)),
-});
-
-export const richTextContentSchema = z.array(
-  z.discriminatedUnion("type", [
-    paragraphNodeSchema,
-    headingNodeSchema,
-    listNodeSchema,
-  ]),
-);
-
-// Project content blocks
-
-const richTextBlockSchema = z.object({
+export const richTextBlockSchema = z.object({
   type: z.literal("richText"),
-  content: richTextContentSchema,
+  content: z.array(richTextNodeSchema),
 });
 
-const imageBlockSchema = z.object({
+export const imageBlockSchema = z.object({
   type: z.literal("image"),
   image: projectImageSchema,
-  caption: z.string().optional(),
 });
 
-const galleryBlockSchema = z.object({
+export const galleryBlockSchema = z.object({
+  type: z.literal("gallery"),
+  layout: z.enum(["grid", "masonry"]),
+  images: z.array(projectImageSchema).min(1),
+});
+
+export const featuresBlockSchema = z.object({
   type: z.literal("features"),
-  title: z.string().optional(),
-  items: z
-    .array(
-      z.object({
-        title: z.string().min(1),
-        description: z.string().min(1),
-        icon: z.string().optional(),
-      }),
-    )
-    .min(1),
+  title: z.string().trim().min(1).max(150),
+  items: z.array(projectFeatureSchema).min(1),
 });
 
-const featuresBlockSchema = z.object({
-  type: z.literal("features"),
-  title: z.string().optional(),
-  items: z
-    .array(
-      z.object({
-        title: z.string().min(1),
-        description: z.string().min(1),
-        icon: z.string().optional(),
-      }),
-    )
-    .min(1),
-});
-
-const twoColumnBlockSchema = z.object({
+export const twoColumnBlockSchema = z.object({
   type: z.literal("twoColumn"),
-  left: richTextContentSchema,
-  right: richTextContentSchema,
+  left: z.array(richTextNodeSchema),
+  right: z.array(richTextNodeSchema),
 });
 
-const codeBlockSchema = z.object({
+export const codeBlockSchema = z.object({
   type: z.literal("code"),
-  language: z.string().min(1),
+  language: z.string().trim().min(1).max(50),
   code: z.string().min(1),
-  filename: z.string().optional(),
 });
 
 export const projectBlockSchema = z.discriminatedUnion("type", [
@@ -119,27 +126,68 @@ export const projectBlockSchema = z.discriminatedUnion("type", [
   codeBlockSchema,
 ]);
 
+// -----------------------------------------------------------------------------
+// Main project schema
+// -----------------------------------------------------------------------------
+
 export const projectSchema = z.object({
-  title: z.string().trim().min(1).max(120),
+  _id: z.string(),
+
+  title: z.string().trim().min(1).max(150),
+
   slug: z
     .string()
     .trim()
     .min(1)
+    .max(180)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
 
   summary: z.string().trim().min(1).max(300),
-  overview: z.string().trim().default(""),
+  overview: z.string().trim().min(1).max(3000),
+
   thumbnail: projectImageSchema.optional(),
   gallery: z.array(projectImageSchema).default([]),
-  technologies: z.array(z.string().trim().min(1)).default([]),
-  links: z.array(projectLinkSchema).default([]),
+
+  tags: z.array(z.string().trim().min(1).max(80)).default([]),
+  technologies: z.array(z.string().trim().min(1).max(80)).default([]),
+
+  role: z.string().trim().min(1).max(100),
+  duration: z.string().trim().min(1).max(100),
+
+  features: z.array(projectFeatureSchema).default([]),
+  keyHighlights: z.array(z.string().trim().min(1).max(1000)).default([]),
+
+  challenges: z.array(projectChallengeSchema).default([]),
+
+  collaborators: z.array(projectCollaboratorSchema).default([]),
+
+  colorTheme: projectColorThemeSchema,
+
+  links: projectLinksSchema,
+
   blocks: z.array(projectBlockSchema).default([]),
+
   isFeatured: z.boolean().default(false),
+
   status: z.enum(["draft", "published"]).default("draft"),
-  order: z.number().int().default(0),
-  publishedAt: z.coerce.date().nullable().optional(),
+
+  order: z.number().int().nonnegative().default(0),
+
+  publishedAt: z.date().nullable().optional(),
 });
+
+// -----------------------------------------------------------------------------
+// Create and update schemas
+// -----------------------------------------------------------------------------
 
 export const createProjectSchema = projectSchema;
 
-export const updateProjectSchema = projectSchema.partial();
+export const updateProjectSchema = projectSchema
+  .omit({ slug: true })
+  .partial()
+  .extend({
+    slug: projectSchema.shape.slug.optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided.",
+  });
